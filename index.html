@@ -92,15 +92,15 @@
     </div>
     <canvas id="canvas"></canvas>
 
-    <form class="mt-5">
+    <div class="mt-5">
         <div class="form-group">
             <input type="text" id="watermark" class="form-control" placeholder="Watermark"
                 value="meme generator by @charlysvlog">
         </div>
         <div class="form-group">
-            <button id="download" class="btn btn-success btn-lg">Download Image</button>
+            <button id="download" type="button" class="btn btn-success btn-lg">Download Image</button>
         </div>
-    </form>
+    </div>
 
     <div class="credits mt-2 pt-2"><p>Contribute to the github <a href="https://github.com/CharlysVlog/meme-generator.git" target="_blank">repository</a></p></div>
 
@@ -203,7 +203,7 @@
             canvas.toBlob(function(blob) {
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = 'edited-image.png';
+                link.download = 'meme-generator-by-charlysvlog' + Date.now() + '.jpg';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
