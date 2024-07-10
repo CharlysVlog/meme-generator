@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEME Generator by @charlysvlog</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #02002e;
+            padding: 20px;
+            margin: 0;
+        }
+
+        body h1 {
+            font-size: 24px;
+        }
+
+        .image-select {
+            border: 1px solid #fff;
+            border-radius: 4px;
+        }
+
+        #canvas {
+            border: 1px solid #000;
+            margin-top: 20px;
+            background-color: #fff;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .credits {
+            border-top: 1px solid #fff;
+        }
+
+        @media (min-width: 600px) {
+            .controls {
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            .controls input,
+            .controls button {
+                margin: 5px 10px;
+                width: auto;
+            }
+
+            #canvas {
+                max-width: 1024px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+     <!-- Google tag (gtag.js) -->
+     <script async src="https://www.googletagmanager.com/gtag/js?id=G-J7DGS48BBZ"></script>
+     <script>
+         window.dataLayer = window.dataLayer || [];
+         function gtag() { dataLayer.push(arguments); }
+         gtag('js', new Date());
+ 
+         gtag('config', 'G-J7DGS48BBZ');
+     </script>
+
+    <h1>MEME Generator by <a href="https://www.youtube.com/channel/UCo1TxAfyZMNLdhVB15IutlQ/">@charlysvlog</a></h1>
+    <p>a simple and free online meme generator</p>
+    <hr/>
+    <div class="controls form-group">
+        <div class="form-group image-select p-5">
+            <p>Select an image to start</p>
+            <input type="file" id="upload" class="form-control-file" accept="image/*">
+        </div>
+        <div class="form-group">
+            <textarea id="text" class="form-control" rows="3"placeholder="Enter meme text"></textarea>
+        </div>
+        <div class="form-group">
+            <input type="range" style="width: 90%;" id="textSize" class="form-control-range" min="10" max="100" value="10">
+            <label for="textSize"  id="textSizeLabel"></label>
+        </div>
+    </div>
+    <canvas id="canvas"></canvas>
+
+    <form class="mt-5">
+        <div class="form-group">
+            <input type="text" id="watermark" class="form-control" placeholder="Watermark"
+                value="meme generator by @charlysvlog">
+        </div>
+        <div class="form-group">
+            <button id="download" class="btn btn-success btn-lg">Download Image</button>
+        </div>
+    </form>
+
+    <div class="credits mt-2 pt-2"><p>Contribute to the github <a href="https://github.com/CharlysVlog/meme-generator.git" target="_blank">repository</a></p></div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const upload = document.getElementById('upload');
+        const textInput = document.getElementById('text');
+        const watermark = document.getElementById('watermark');
+        const textSizeSlider = document.getElementById('textSize');
+        const labelTextSize = document.getElementById('textSizeLabel');
+        const downloadButton = document.getElementById('download');
+        let uploadedImage = null;
+        let textSize = 30;
+        setFontSize();
+
+        // Handle image upload
+        upload.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        uploadedImage = img;
+                        textSize = Math.round(uploadedImage.height / 30 + 10);
+                        drawImageAndText();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle text input
+        textInput.addEventListener('input', drawImageAndText);
+        watermark.addEventListener('input', drawImageAndText);
+
+        // Handle text size change
+        textSizeSlider.addEventListener('input', function () {
+            textSize = parseInt(textSizeSlider.value);
+            setFontSize();
+            drawImageAndText();
+        });
+
+        function setFontSize() {
+            labelTextSize.innerHTML = 'Font Size: ' + textSize;
+            textSizeSlider.value = textSize;
+        }
+
+        // Function to draw image and text
+        function drawImageAndText() {
+            if (!uploadedImage) return;
+            setFontSize();
+            // Set canvas size
+            const text = textInput.value;
+            const lines = text.split('\n');
+            const lineHeight = textSize + textSize * 1.2;
+            const textHeight = lineHeight * lines.length;
+
+            canvas.width = uploadedImage.width;
+            canvas.height = uploadedImage.height + textHeight;
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            //draw white brackground
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw image
+            ctx.drawImage(uploadedImage, 0, textHeight, canvas.width, canvas.height - textHeight);
+            // Add text overlay
+            ctx.fillStyle = 'black';
+            ctx.font = `${textSize}px Arial`;
+            ctx.textAlign = 'left';
+            let y = textSize + 5;
+            lines.forEach(line => {
+                ctx.fillText(line, 20, y);
+                y += lineHeight;
+            });
+
+            addWatermakr();
+        }
+
+        function addWatermakr() {
+            if (!uploadedImage) return;
+            ctx.textAlign = 'left';
+            ctx.fillStyle = 'black';
+            ctx.font = `12px Arial`;
+            ctx.fillText(watermark.value, 10, canvas.height - 10);
+        }
+
+        // Handle download
+        downloadButton.addEventListener('click', function () {
+            if (!uploadedImage) {
+                alert("Image not selected!");
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/jpg');
+            link.download = 'meme-generator-by-charlysvlog' + Date.now() + '.jpg';
+            link.click();
+        });
+    </script>
+</body>
+
+</html>
